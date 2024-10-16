@@ -9,7 +9,7 @@ export class UserPoolConstruct extends Construct {
     constructor(scope: Construct, id: string, props: UserPoolConstructProps) {
         super(scope, id);
 
-        const userPool = new cognito.UserPool(this, 'BPUserPool', {
+        const userPool = new cognito.UserPool(scope, 'BPUserPool', {
             userPoolName: 'BPUserPool',
             selfSignUpEnabled: true,
             userVerification: {
@@ -22,6 +22,7 @@ export class UserPoolConstruct extends Construct {
                 phone: true,
             },
             mfa: cognito.Mfa.REQUIRED,
+            mfaMessage: 'Your BreaKPoint authentication code is {####}.',
             mfaSecondFactor: {
                 sms: true,
                 otp: false,
