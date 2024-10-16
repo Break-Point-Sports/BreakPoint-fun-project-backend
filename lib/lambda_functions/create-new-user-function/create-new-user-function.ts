@@ -1,16 +1,32 @@
 exports.handler = async (event) => {
-    // Extract specific properties from the event object
-    const { resource, path, httpMethod, headers, queryStringParameters, body } = event;
-    const response = {
-      resource,
-      path,
-      httpMethod,
-      headers,
-      queryStringParameters,
-      body,
-    };
-    return {
-      body: JSON.stringify(response, null, 2),
+
+    var method = event.requestContext.http.method
+  
+    if (method != 'POST'){
+        return {
+            'statusCode': 405,
+        }
+    }
+
+    var body = JSON.parse(event.body)
+    console.log('body: ' + JSON.stringify(body))
+
+    var cognitoId = body['cognitoId']
+    var firstName = body['firstName']
+    var lastName = body['lastName']
+    var birthday = body['birthday']
+    var gender = body['gender']
+
+
+    console.log('cognitoId: ' + cognitoId)
+    console.log('firstName: ' + firstName)
+    console.log('lastName: ' + lastName)
+    console.log('birthday: ' + birthday)
+    console.log('gender: ' + gender)
+
+    var response = {
       statusCode: 200,
     };
+
+    return response;
   };
