@@ -8,17 +8,20 @@ export interface CreateNewUserLambdaConstructProps {
 }
 
 export class CreateNewUserLambdaConstruct extends Construct {
+
+    public readonly createNewUserFunction: lambda.Function;
+    
     constructor(scope: Construct, id: string, props: CreateNewUserLambdaConstructProps) {
         super(scope, id);
 
-        const fn = new lambda.Function(this, 'CreateNewUserFunction', {
+        this.createNewUserFunction = new lambda.Function(this, 'CreateNewUserFunction', {
             runtime: lambda.Runtime.NODEJS_16_X,
             handler: 'index.handler',
             code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/create-new-user-function')),
         });
       
         const endpoint = new apigw.LambdaRestApi(this, `ApiGwEndpoint`, {
-            handler: fn,
+            handler: this.createNewUserFunction,
             restApiName: `CreateNewUser`,
         });
     }
