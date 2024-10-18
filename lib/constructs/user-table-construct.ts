@@ -15,7 +15,7 @@ export class UserTableConstruct extends Construct {
         const userTable = new dynamodb.Table(this, 'UserTable', {
             tableName: 'BreakPointUserTable',
             partitionKey: {
-                name: 'cognitoID',
+                name: 'cognitoId',
                 type: dynamodb.AttributeType.STRING
             },
             removalPolicy: RemovalPolicy.RETAIN,

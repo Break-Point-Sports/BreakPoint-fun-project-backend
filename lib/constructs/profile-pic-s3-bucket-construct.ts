@@ -11,6 +11,7 @@ export class ProfilePicS3BucketConstruct extends Construct {
         super(scope, id);
 
         const pofilePicS3Bucket = new s3.Bucket(scope, 'ProfilePicBucket', {
+            bucketName: 'break-point-profile-pic-bucket',
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             encryption: s3.BucketEncryption.S3_MANAGED,
             enforceSSL: true,

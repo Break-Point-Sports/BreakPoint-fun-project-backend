@@ -16,7 +16,7 @@ export class CreateNewUserLambdaConstruct extends Construct {
         super(scope, id);
 
         this.createNewUserFunction = new lambda.Function(this, 'CreateNewUserFunction', {
-            runtime: lambda.Runtime.NODEJS_LATEST,
+            runtime: lambda.Runtime.NODEJS_18_X,
             handler: 'index.handler',
             code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/create-new-user-function')),
         });
