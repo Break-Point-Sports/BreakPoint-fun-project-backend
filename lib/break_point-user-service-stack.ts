@@ -18,8 +18,5 @@ export class BreakPointUserServiceStack extends cdk.Stack {
     });
 
     const profilePicS3BucketConstruct = new ProfilePicS3BucketConstruct(this, 'ProfilePicS3Bucket', {});
-    
-
-    
   }
 }

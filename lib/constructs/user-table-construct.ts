@@ -13,6 +13,7 @@ export class UserTableConstruct extends Construct {
         super(scope, id);
 
         const userTable = new dynamodb.Table(this, 'UserTable', {
+            tableName: 'BreakPointUserTable',
             partitionKey: {
                 name: 'cognitoID',
                 type: dynamodb.AttributeType.STRING

@@ -1,6 +1,8 @@
+var AWS = require('aws-sdk');
+
 exports.handler = async (event) => {
 
-    var method = event.requestContext.http.method
+    var method = event.requestContext.http.method 
   
     if (method != 'POST'){
         return {
@@ -9,6 +11,7 @@ exports.handler = async (event) => {
     }
 
     var body = JSON.parse(event.body)
+    
     console.log('body: ' + JSON.stringify(body))
 
     var cognitoId = body['cognitoId']
@@ -18,8 +21,6 @@ exports.handler = async (event) => {
     var gender = body['gender']
     var tennisLevel = body['tennisLevel']
 
-
-    
     console.log('cognitoId: ' + cognitoId)
     console.log('firstName: ' + firstName)
     console.log('lastName: ' + lastName)
@@ -27,6 +28,23 @@ exports.handler = async (event) => {
     console.log('gender: ' + gender)
     console.log('tennisLevel: ' + tennisLevel)
 
+    var ddb = new AWS.DynamoDB({ apiVersion: "2012-08-10" });
+
+    var params = {
+      TableName: "BreakPointUserTable",
+      Item: {
+        cognitoID: { S: cognitoId },
+      },
+    };
+
+    ddb.putItem(params, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+      } else {
+        console.log("Success", data);
+      }
+    });
+    
     var response = {
       statusCode: 200,
     };
