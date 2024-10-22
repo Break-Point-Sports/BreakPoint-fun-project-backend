@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { BreakPointUserServiceStack } from '../lib/break_point-user-service-stack';
-import { PROD_AWS_ACCOUNT, PROD_AWS_REGION } from '../lib/util/constants';
+import { UserTableStack } from '../lib/stacks/user-table-stack';
+import { CognitoStack } from '../lib/stacks/cognito-stack';
+import { ProfilePicStack } from '../lib/stacks/profile-pic-stack';
 
 const app = new cdk.App();
-new BreakPointUserServiceStack(app, 'BreakPointUserServiceStack', {
-  env: { account: PROD_AWS_ACCOUNT, region: PROD_AWS_REGION },
-});
+new UserTableStack(app, 'BreakPointUserServiceStack', {});
+new CognitoStack(app, 'CognitoStack', {})
+new ProfilePicStack(app, 'ProfilePicStack', {})

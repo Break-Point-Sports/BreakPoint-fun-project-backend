@@ -5,6 +5,7 @@ import { Construct } from 'constructs';
 
 export interface UserTableConstructProps {
     createNewUserLambdaFunction: lambda.Function,
+    getUserDetailsLambdaFunction: lambda.Function,
 }
 
 export class UserTableConstruct extends Construct {
@@ -22,5 +23,6 @@ export class UserTableConstruct extends Construct {
         });
 
         userTable.grantFullAccess(props.createNewUserLambdaFunction);
+        userTable.grantReadData(props.getUserDetailsLambdaFunction);
     }
 }
