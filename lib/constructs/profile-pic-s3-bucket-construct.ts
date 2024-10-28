@@ -5,7 +5,7 @@ import { RemovalPolicy } from 'aws-cdk-lib';
 import * as lambda from "aws-cdk-lib/aws-lambda";
 
 export interface ProfilePicS3BucketConstructProps {
-    updateProfilePicLambdaFunction: lambda.Function,
+    updateProfilePicLambdaFunction: lambda.Function;
 }
 
 export class ProfilePicS3BucketConstruct extends Construct {
@@ -16,10 +16,16 @@ export class ProfilePicS3BucketConstruct extends Construct {
 
         this.profilePicS3Bucket = new s3.Bucket(scope, 'ProfilePicBucket', {
             bucketName: 'break-point-profile-pic-bucket',
-            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             encryption: s3.BucketEncryption.S3_MANAGED,
             enforceSSL: true,
             versioned: true,
+            publicReadAccess: true,
+            blockPublicAccess: {
+                blockPublicPolicy: false,
+                blockPublicAcls: false,
+                ignorePublicAcls: false,
+                restrictPublicBuckets: false,
+            },
             removalPolicy: RemovalPolicy.RETAIN,
             cors: [{
                 allowedHeaders: ["Authorization","*"],

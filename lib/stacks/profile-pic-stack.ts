@@ -8,10 +8,9 @@ export class ProfilePicStack extends cdk.Stack {
     super(scope, id, props);
 
     const updateProfilePicLambdaConstruct = new UpdateProfilePicLambdaConstruct(this, 'UpdateProfilePicLambda', {});
-
     const profilePicS3BucketConstruct = new ProfilePicS3BucketConstruct(this, 'ProfilePicS3Bucket', {
         updateProfilePicLambdaFunction: updateProfilePicLambdaConstruct.updateProfilePicFunction,
 
-    })
+    });
   }
 }
