@@ -6,6 +6,6 @@ import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { ProfilePicStack } from '../lib/stacks/profile-pic-stack';
 
 const app = new cdk.App();
-new UserTableStack(app, 'BreakPointUserServiceStack', {});
+new UserTableStack(app, 'UserTableStack', {});
 new CognitoStack(app, 'CognitoStack', {})
 new ProfilePicStack(app, 'ProfilePicStack', {})
