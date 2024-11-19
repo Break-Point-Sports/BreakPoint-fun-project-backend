@@ -4,8 +4,17 @@ import * as cdk from 'aws-cdk-lib';
 import { UserTableStack } from '../lib/stacks/user-table-stack';
 import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { ProfilePicStack } from '../lib/stacks/profile-pic-stack';
+import { MessagingTablesStack } from '../lib/stacks/messaging-tables-stack';
+import { AppsyncAPIStack } from '../lib/stacks/appsync-api-stack';
 
 const app = new cdk.App();
-new UserTableStack(app, 'UserTableStack', {});
-new CognitoStack(app, 'CognitoStack', {})
-new ProfilePicStack(app, 'ProfilePicStack', {})
+const userTableStack = new UserTableStack(app, 'UserTableStack', {});
+const cognitoStack = new CognitoStack(app, 'CognitoStack', {});
+const profilePicStack = new ProfilePicStack(app, 'ProfilePicStack', {});
+const messagingTablesStack = new MessagingTablesStack(app, 'MessagingTablesStack', {});
+const appSyncAPIStack = new AppsyncAPIStack(app, 'AppsyncAPIStack', {
+    userpool: cognitoStack.userPool,
+    userTable: userTableStack.userTable,
+    roomTable: messagingTablesStack.roomTable,
+    messageTable: messagingTablesStack.messageTable
+})

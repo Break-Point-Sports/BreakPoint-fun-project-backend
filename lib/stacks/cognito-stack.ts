@@ -14,33 +14,39 @@ export class CognitoStack extends cdk.Stack {
         this.userPool = new cognito.UserPool(this, 'BPUserPool', {
             userPoolName: 'BPUserPool',
             selfSignUpEnabled: true,
-            userVerification: {
-                smsMessage: 'Thanks for signing up for BreakPoint! Your verification code is {####}.',
+            passwordPolicy: {
+                minLength: 8,
             },
             signInAliases: {
                 phone: true,
             },
-            autoVerify: {
-                phone: true,
-            },
-            mfa: cognito.Mfa.REQUIRED,
-            mfaMessage: 'Your BreaKPoint authentication code is {####}.',
-            mfaSecondFactor: {
-                sms: true,
-                otp: false,
-            },
-            passwordPolicy: {
-                minLength: 8,
-            },
+            // userVerification: {
+            //     smsMessage: 'Thanks for signing up for BreakPoint! Your verification code is {####}.',
+            // },
+
+            // autoVerify: {
+            //     phone: true,
+            // },
+            // mfa: cognito.Mfa.REQUIRED,
+            // mfaMessage: 'Your BreaKPoint authentication code is {####}.',
+            // mfaSecondFactor: {
+            //     sms: true,
+            //     otp: false,
+            // },
+
         })
         
         this.userPoolClient = new cognito.UserPoolClient(this, "BPUserPoolClient", {
             userPool: this.userPool,
             generateSecret: false,
+            // Remove authflows after setting up mfa
+            authFlows: {
+                userPassword: true,
+              },
         });
 
         this.identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
-            identityPoolName: "BSIdentityPool",
+            identityPoolName: "BPIdentityPool",
             allowUnauthenticatedIdentities: false, // Don't allow unathenticated users
             cognitoIdentityProviders: [
                 {
