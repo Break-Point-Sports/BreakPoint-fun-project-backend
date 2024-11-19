@@ -5,17 +5,39 @@ import { Construct } from 'constructs'
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 
-interface LeagueTableStackProps extends StackProps {}
+interface LeagueStackProps extends StackProps {}
 
-export class LeagueTableStack extends Stack {
+export class LeagueStack extends Stack {
 	public readonly leagueTable: Table;
     public readonly singlesMatchesTable: Table;
-    public readonly getLeaguesLambdaFunction: lambda.Function;
+    public readonly getLeagueInfoLambdaFunction: lambda.Function;
 
-	constructor(scope: Construct, id: string, props: LeagueTableStackProps) {
+	constructor(scope: Construct, id: string, props: LeagueStackProps) {
 		super(scope, id, props)
 
+		// Get league info lambda
+		this.getLeagueInfoLambdaFunction = new lambda.Function(this, 'GetLeagueInfo', {
+			runtime: lambda.Runtime.NODEJS_18_X,
+			handler: 'index.handler',
+			code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/get-league-info-function')),
+		});
+	
+		const getLeagueFunctionURL = this.getLeagueInfoLambdaFunction.addFunctionUrl({
+			authType: lambda.FunctionUrlAuthType.NONE,
+		});
+	
+		const getLeagueFunctionEndpoint = new apigw.LambdaRestApi(this, `ApiGwEndpoint`, {
+		handler: this.getLeagueInfoLambdaFunction,
+		restApiName: `GetLeagueInfo`,
+		proxy: false
+		});
+	  
+		const getLeagueInfoItems = getLeagueFunctionEndpoint.root.addResource('items');
+		getLeagueInfoItems.addMethod('POST');
+
+		// Leagues table
 		this.leagueTable = new Table(this, 'LeagueTable', {
+			tableName: 'BreakPointLeaguesTable',
 			removalPolicy: RemovalPolicy.RETAIN,
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			partitionKey: { 
@@ -23,8 +45,12 @@ export class LeagueTableStack extends Stack {
                 type: AttributeType.STRING 
             },
 		})
+		this.leagueTable.grantReadData(this.getLeagueInfoLambdaFunction)
 
-        this.singlesMatchesTable = new Table(this, 'SinglesMatchesTable', {
+
+		// Singles matches table
+        this.singlesMatchesTable = new Table(this, 'BreakPointSinglesMatchesTable', {
+			tableName: 'BreakPointSinglesMatchesTable',
 			removalPolicy: RemovalPolicy.RETAIN,
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			partitionKey: { 
@@ -33,6 +59,7 @@ export class LeagueTableStack extends Stack {
             },
 		})
 
+		// Singles matches secondary index to search for matches by player (cognito) id
 		this.singlesMatchesTable.addGlobalSecondaryIndex({
 			indexName: 'matches-by-cognito-id',
 			partitionKey: { 

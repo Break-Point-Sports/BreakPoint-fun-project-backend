@@ -18,12 +18,14 @@ export class MessagingTablesStack extends Stack {
 		super(scope, id, props)
 
 		const roomTable = new Table(this, 'RoomTable', {
+			tableName: 'BreakPointRoomTable',
 			removalPolicy: RemovalPolicy.RETAIN,
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 		})
 
 		const messageTable = new Table(this, 'MessageTable', {
+			tableName: 'BreakPointMessageTable',
 			removalPolicy: RemovalPolicy.RETAIN,
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			partitionKey: { name: 'id', type: AttributeType.STRING },

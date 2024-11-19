@@ -6,6 +6,7 @@ import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { ProfilePicStack } from '../lib/stacks/profile-pic-stack';
 import { MessagingTablesStack } from '../lib/stacks/messaging-tables-stack';
 import { AppsyncAPIStack } from '../lib/stacks/appsync-api-stack';
+import { LeagueStack } from '../lib/stacks/league-table-stack';
 
 const app = new cdk.App();
 const userTableStack = new UserTableStack(app, 'UserTableStack', {});
@@ -18,3 +19,4 @@ const appSyncAPIStack = new AppsyncAPIStack(app, 'AppsyncAPIStack', {
     roomTable: messagingTablesStack.roomTable,
     messageTable: messagingTablesStack.messageTable
 })
+const leagueStack = new LeagueStack(app, 'LeagueStack', {})
