@@ -11,18 +11,19 @@ export class LeagueStack extends Stack {
 	public readonly leagueTable: Table;
     public readonly singlesMatchesTable: Table;
     public readonly getLeagueInfoLambdaFunction: lambda.Function;
+	public readonly getLeaguesLambdaFunction: lambda.Function;
 
 	constructor(scope: Construct, id: string, props: LeagueStackProps) {
 		super(scope, id, props)
 
-		// Get league info lambda
+		// Get info for a specific league lambda
 		this.getLeagueInfoLambdaFunction = new lambda.Function(this, 'GetLeagueInfo', {
 			runtime: lambda.Runtime.NODEJS_18_X,
 			handler: 'index.handler',
 			code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/get-league-info-function')),
 		});
 	
-		const getLeagueFunctionURL = this.getLeagueInfoLambdaFunction.addFunctionUrl({
+		const getLeagueInfoFunctionURL = this.getLeagueInfoLambdaFunction.addFunctionUrl({
 			authType: lambda.FunctionUrlAuthType.NONE,
 		});
 	
@@ -33,7 +34,27 @@ export class LeagueStack extends Stack {
 		});
 	  
 		const getLeagueInfoItems = getLeagueFunctionEndpoint.root.addResource('items');
-		getLeagueInfoItems.addMethod('POST');
+		getLeagueInfoItems.addMethod('GET');
+
+		// Get leagues lambda function based on active status
+		this.getLeaguesLambdaFunction = new lambda.Function(this, 'GetLeaguesLambda', {
+			runtime: lambda.Runtime.NODEJS_18_X,
+			handler: 'index.handler',
+			code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/get-leagues-function')),
+		});
+	
+		const getLeaguesFunctinoURL = this.getLeaguesLambdaFunction.addFunctionUrl({
+			authType: lambda.FunctionUrlAuthType.NONE,
+		});
+	
+		const getLeaguesFunctionEndpoint = new apigw.LambdaRestApi(this, `GetLeaguesApiGwEndpoint`, {
+		handler: this.getLeagueInfoLambdaFunction,
+		restApiName: `GetLeagues`,
+		proxy: false
+		});
+	  
+		const getLeaguesItems = getLeaguesFunctionEndpoint.root.addResource('items');
+		getLeaguesItems.addMethod('GET');		
 
 		// Leagues table
 		this.leagueTable = new Table(this, 'LeagueTable', {
@@ -45,8 +66,17 @@ export class LeagueStack extends Stack {
                 type: AttributeType.STRING 
             },
 		})
-		this.leagueTable.grantReadData(this.getLeagueInfoLambdaFunction)
+		this.leagueTable.grantReadData(this.getLeagueInfoLambdaFunction);
+		this.leagueTable.grantReadData(this.getLeaguesLambdaFunction);
 
+		// Singles matches secondary index to search for matches by player (cognito) id
+		this.leagueTable.addGlobalSecondaryIndex({
+			indexName: 'leagues-by-is-active',
+			partitionKey: { 
+				name: 'isActive', 
+				type: AttributeType.STRING 
+			},
+		})
 
 		// Singles matches table
         this.singlesMatchesTable = new Table(this, 'BreakPointSinglesMatchesTable', {
