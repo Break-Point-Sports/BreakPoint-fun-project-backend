@@ -1,33 +1,33 @@
 import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
-import * as path from 'path';
+import { join } from 'path';
 import { Construct } from 'constructs'
-import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as apigw from "aws-cdk-lib/aws-apigateway";
+import { Function, Runtime, Code, FunctionUrlAuthType } from "aws-cdk-lib/aws-lambda";
+import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 
 interface LeagueStackProps extends StackProps {}
 
 export class LeagueStack extends Stack {
 	public readonly leagueTable: Table;
-    public readonly singlesMatchesTable: Table;
-    public readonly getLeagueInfoLambdaFunction: lambda.Function;
-	public readonly getLeaguesLambdaFunction: lambda.Function;
+  public readonly singlesMatchesTable: Table;
+  public readonly getLeagueInfoLambdaFunction: Function;
+	public readonly getLeaguesLambdaFunction: Function;
 
 	constructor(scope: Construct, id: string, props: LeagueStackProps) {
 		super(scope, id, props)
 
 		// Get info for a specific league lambda
-		this.getLeagueInfoLambdaFunction = new lambda.Function(this, 'GetLeagueInfo', {
-			runtime: lambda.Runtime.NODEJS_18_X,
+		this.getLeagueInfoLambdaFunction = new Function(this, 'GetLeagueInfo', {
+			runtime: Runtime.NODEJS_18_X,
 			handler: 'index.handler',
-			code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/get-league-info-function')),
+			code: Code.fromAsset(join(__dirname, '../lambda_functions/get-league-info-function')),
 		});
 	
 		const getLeagueInfoFunctionURL = this.getLeagueInfoLambdaFunction.addFunctionUrl({
-			authType: lambda.FunctionUrlAuthType.NONE,
+			authType: FunctionUrlAuthType.NONE,
 		});
 	
-		const getLeagueFunctionEndpoint = new apigw.LambdaRestApi(this, `ApiGwEndpoint`, {
+		const getLeagueFunctionEndpoint = new LambdaRestApi(this, `ApiGwEndpoint`, {
 		handler: this.getLeagueInfoLambdaFunction,
 		restApiName: `GetLeagueInfo`,
 		proxy: false
@@ -37,24 +37,24 @@ export class LeagueStack extends Stack {
 		getLeagueInfoItems.addMethod('GET');
 
 		// Get leagues lambda function based on active status
-		this.getLeaguesLambdaFunction = new lambda.Function(this, 'GetLeaguesLambda', {
-			runtime: lambda.Runtime.NODEJS_18_X,
+		this.getLeaguesLambdaFunction = new Function(this, 'GetLeaguesLambda', {
+			runtime: Runtime.NODEJS_18_X,
 			handler: 'index.handler',
-			code: lambda.Code.fromAsset(path.join(__dirname, '../lambda_functions/get-leagues-function')),
+			code: Code.fromAsset(join(__dirname, '../lambda_functions/get-leagues-function')),
 		});
 	
-		const getLeaguesFunctinoURL = this.getLeaguesLambdaFunction.addFunctionUrl({
-			authType: lambda.FunctionUrlAuthType.NONE,
+		const getLeaguesFunctionURL = this.getLeaguesLambdaFunction.addFunctionUrl({
+			authType: FunctionUrlAuthType.NONE,
 		});
 	
-		const getLeaguesFunctionEndpoint = new apigw.LambdaRestApi(this, `GetLeaguesApiGwEndpoint`, {
+		const getLeaguesFunctionEndpoint = new LambdaRestApi(this, `GetLeaguesApiGwEndpoint`, {
 		handler: this.getLeagueInfoLambdaFunction,
 		restApiName: `GetLeagues`,
 		proxy: false
 		});
 	  
 		const getLeaguesItems = getLeaguesFunctionEndpoint.root.addResource('items');
-		getLeaguesItems.addMethod('GET');		
+		getLeaguesItems.addMethod('GET');
 
 		// Leagues table
 		this.leagueTable = new Table(this, 'LeagueTable', {
