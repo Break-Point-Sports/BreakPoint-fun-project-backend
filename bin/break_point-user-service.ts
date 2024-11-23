@@ -9,6 +9,7 @@ import { AppsyncAPIStack } from '../lib/stacks/appsync-api-stack';
 import { LeagueStack } from '../lib/stacks/league-table-stack';
 
 const app = new cdk.App();
+const leagueStack = new LeagueStack(app, 'LeagueStack', {})
 const userTableStack = new UserTableStack(app, 'UserTableStack', {});
 const cognitoStack = new CognitoStack(app, 'CognitoStack', {});
 const profilePicStack = new ProfilePicStack(app, 'ProfilePicStack', {});
@@ -19,4 +20,3 @@ const appSyncAPIStack = new AppsyncAPIStack(app, 'AppsyncAPIStack', {
     roomTable: messagingTablesStack.roomTable,
     messageTable: messagingTablesStack.messageTable
 })
-const leagueStack = new LeagueStack(app, 'LeagueStack', {})
