@@ -12,6 +12,7 @@ export class UserTableStack extends Stack {
   public readonly getUserDetailsLambdaFunction: Function;
   public readonly createNewUserLambdaFunction: Function;
   public readonly joinLeagueLambdaFunction: Function;
+  public readonly joinLadderLambdaFunction: Function;
   public readonly userTable: Table;
   
 
@@ -60,7 +61,7 @@ export class UserTableStack extends Stack {
     getUserDetailsItems.addMethod('GET');
 
 
-    // Join a league lambda function. Updates user and league tables
+    // Join a league lambda function
     this.joinLeagueLambdaFunction = new Function(this, 'JoinLeagueLambda', {
       functionName: 'JoinLeagueFunction',
       runtime: Runtime.NODEJS_18_X,
@@ -80,6 +81,27 @@ export class UserTableStack extends Stack {
 
     const joinLeagueItems = joinLeagueFunctionEndpoint.root.addResource('items');
     joinLeagueItems.addMethod('POST')
+
+    // Join a ladder lambda function
+    this.joinLadderLambdaFunction = new Function(this, 'JoinLadderLambda', {
+      functionName: 'JoinLadderFunction',
+      runtime: Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: Code.fromAsset(join(__dirname, '../lambda_functions/join-ladder-function')),
+    })
+
+    const joinLadderFunctionURL = this.joinLadderLambdaFunction.addFunctionUrl({
+      authType: FunctionUrlAuthType.NONE,
+    })
+
+    const joinLadderFunctionEndpoint = new LambdaRestApi(this, 'JoinLadderApiGWEndpoint', {
+      handler: this.joinLadderLambdaFunction,
+      restApiName: 'JoinLadder',
+      proxy: false
+    })
+
+    const joinLadderItems = joinLadderFunctionEndpoint.root.addResource('items');
+    joinLadderItems.addMethod('POST')
 
     this.userTable = new Table(this, 'UserTable', {
       tableName: 'BreakPointUserTable',
@@ -101,6 +123,7 @@ export class UserTableStack extends Stack {
 
     this.userTable.grantFullAccess(this.createNewUserLambdaFunction);
     this.userTable.grantFullAccess(this.joinLeagueLambdaFunction);
+    this.userTable.grantFullAccess(this.joinLadderLambdaFunction);
     this.userTable.grantReadData(this.getUserDetailsLambdaFunction);
   }
 }
