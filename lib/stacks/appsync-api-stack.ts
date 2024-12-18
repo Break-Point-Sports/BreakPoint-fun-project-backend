@@ -95,18 +95,6 @@ export class AppsyncAPIStack extends Stack {
 			),
 		})
 
-		messageTableDataSource.createResolver('updateMessageResolver', {
-			typeName: 'Mutation',
-			fieldName: 'updateMessage',
-			requestMappingTemplate: MappingTemplate.fromFile(
-				path.join(
-					__dirname,
-					'../graphql/mappingTemplates/Mutation.updateMessage.req.vtl'
-				)
-			),
-			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-		})
-
 		new CfnOutput(this, 'GraphQLAPIURL', {
 			value: api.graphqlUrl,
 		})

@@ -1,5 +1,5 @@
 type Query {
-	listRooms(limit: Int): RoomConnection
+	listRooms(ownerId: String!): RoomConnection
 	listMessagesForRoom(
 		roomId: ID!
 		sortDirection: ModelSortDirection
@@ -8,7 +8,6 @@ type Query {
 
 type Mutation {
 	createMessage(input: MessageInput!): Message
-	updateMessage(input: MessageInput!): Message
 	createRoom(input: RoomInput!): Room
 }
 
@@ -16,8 +15,6 @@ type Subscription {
 	onCreateRoom: Room @aws_subscribe(mutations: ["createRoom"])
 	onCreateMessageByRoomId(roomId: ID): Message
 		@aws_subscribe(mutations: ["createMessage"])
-	onUpdateMessage(roomId: ID): Message
-		@aws_subscribe(mutations: ["updateMessage"])
 }
 
 type RoomConnection {
@@ -26,19 +23,22 @@ type RoomConnection {
 }
 
 type Room {
-	id: ID!
+	id: ID
+	createdAt: AWSDateTime
 	name: String!
+  chatPartnerId: String!
+  ownerId: String!
 	messages(
 		sortDirection: ModelSortDirection
 		limit: Int
 		nextToken: String
 	): MessageConnection
-	createdAt: AWSDateTime
-	updatedAt: AWSDateTime
 }
 
 input RoomInput {
 	name: String!
+  chatPartnerId: String!
+  ownerId: String!
 }
 
 type MessageConnection {
@@ -47,28 +47,19 @@ type MessageConnection {
 }
 
 type Message {
-	id: ID!
-	content: MessageContent!
-	owner: String!
+	id: ID
 	createdAt: AWSDateTime!
-	updatedAt: AWSDateTime!
 	roomId: ID!
-}
-
-type MessageContent {
-	text: String
-	imageId: String
+  senderId: String!
+  recipientId: String!
+  content: String!
 }
 
 input MessageInput {
-	content: MessageContentInput!
 	roomId: ID!
-	id: ID
-}
-
-input MessageContentInput {
-	text: String
-	imageId: String
+  senderId: String!
+  recipientId: String!
+	content: String!
 }
 
 enum ModelSortDirection {

@@ -13,6 +13,7 @@ export class UserTableStack extends Stack {
   public readonly createNewUserLambdaFunction: Function;
   public readonly joinLeagueLambdaFunction: Function;
   public readonly joinLadderLambdaFunction: Function;
+  public readonly getLeagueMembersFunction: Function;
   public readonly userTable: Table;
   
 
@@ -103,6 +104,28 @@ export class UserTableStack extends Stack {
     const joinLadderItems = joinLadderFunctionEndpoint.root.addResource('items');
     joinLadderItems.addMethod('POST')
 
+    // Query league members lambda function
+    this.getLeagueMembersFunction = new Function(this, 'GetLeagueMembersLambda', {
+      functionName: 'GetLeagueMembersFunction',
+      runtime: Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: Code.fromAsset(join(__dirname, '../lambda_functions/get-league-members-function')),
+    })
+
+    const getLeagueMembersFunctionURL = this.getLeagueMembersFunction.addFunctionUrl({
+      authType: FunctionUrlAuthType.NONE,
+    })
+
+    const getLeagueMembersFunctionEndpoint = new LambdaRestApi(this, 'GetLeagueMembersApiGWEndpoint', {
+      handler: this.getLeagueMembersFunction,
+      restApiName: 'GetLeagueMembers',
+      proxy: false
+    })
+
+    const getLeagueMembersItems = getLeagueMembersFunctionEndpoint.root.addResource('items');
+    getLeagueMembersItems.addMethod('GET')
+
+    // Create user table
     this.userTable = new Table(this, 'UserTable', {
       tableName: 'BreakPointUserTable',
 			billingMode: BillingMode.PAY_PER_REQUEST,
@@ -113,6 +136,7 @@ export class UserTableStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN,
     });
 
+    // Add gsi for querying users by league
     this.userTable.addGlobalSecondaryIndex({
 			indexName: 'users-by-current-league',
 			partitionKey: { 
@@ -125,5 +149,6 @@ export class UserTableStack extends Stack {
     this.userTable.grantFullAccess(this.joinLeagueLambdaFunction);
     this.userTable.grantFullAccess(this.joinLadderLambdaFunction);
     this.userTable.grantReadData(this.getUserDetailsLambdaFunction);
+    this.userTable.grantReadData(this.getLeagueMembersFunction);
   }
 }
