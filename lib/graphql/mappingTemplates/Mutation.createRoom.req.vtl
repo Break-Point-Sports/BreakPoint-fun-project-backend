@@ -1,5 +1,6 @@
 $util.qr($ctx.args.input.put("id", $util.autoId()))
 $util.qr($ctx.args.input.put("createdAt", $util.time.nowISO8601()))
+$util.qr($ctx.args.input.put("chatPartnerRoomId", $util.defaultIfNull($ctx.args.input.chatPartnerRoomId, 'unspecified')))
 
 #set( $PutItemRequest = {
   "version": "2018-05-29",

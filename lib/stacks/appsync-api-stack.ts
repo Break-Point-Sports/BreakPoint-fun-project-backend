@@ -54,6 +54,18 @@ export class AppsyncAPIStack extends Stack {
 			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
 		})
 
+    roomTableDataSource.createResolver('updateChatPartnerRoomIdResolver', {
+      typeName: 'Mutation',
+      fieldName: 'updateChatPartnerRoomId',
+      requestMappingTemplate: MappingTemplate.fromFile(
+				path.join(
+					__dirname,
+					'../graphql/mappingTemplates/Mutation.updateChatPartnerRoomId.req.vtl'
+				)
+			),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    })
+
 		roomTableDataSource.createResolver('listRoomsResolver', {
 			typeName: 'Query',
 			fieldName: 'listRooms',

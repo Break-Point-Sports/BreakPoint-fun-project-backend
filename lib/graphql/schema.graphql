@@ -1,5 +1,7 @@
 type Query {
-	listRooms(ownerId: String!): RoomConnection
+	listRooms(
+    ownerId: String!
+  ): RoomConnection
 	listMessagesForRoom(
 		roomId: ID!
 		sortDirection: ModelSortDirection
@@ -9,10 +11,12 @@ type Query {
 type Mutation {
 	createMessage(input: MessageInput!): Message
 	createRoom(input: RoomInput!): Room
+  updateChatPartnerRoomId(input: ChatPartnerRoomIdInput!): Room
 }
 
 type Subscription {
-	onCreateRoom: Room @aws_subscribe(mutations: ["createRoom"])
+	onCreateRoomByOwnerId(ownerId: String!): Room 
+    @aws_subscribe(mutations: ["createRoom"])
 	onCreateMessageByRoomId(roomId: ID): Message
 		@aws_subscribe(mutations: ["createMessage"])
 }
@@ -27,6 +31,7 @@ type Room {
 	createdAt: AWSDateTime
 	name: String!
   chatPartnerId: String!
+  chatPartnerRoomId: String
   ownerId: String!
 	messages(
 		sortDirection: ModelSortDirection
@@ -38,7 +43,13 @@ type Room {
 input RoomInput {
 	name: String!
   chatPartnerId: String!
+  chatPartnerRoomId: String
   ownerId: String!
+}
+
+input ChatPartnerRoomIdInput {
+  roomId: ID!
+  chatPartnerRoomId: String!
 }
 
 type MessageConnection {
