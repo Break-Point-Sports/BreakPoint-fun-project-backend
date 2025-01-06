@@ -12,6 +12,8 @@ export class LeagueStack extends Stack {
   public readonly singlesMatchesTable: Table;
   public readonly getLeagueInfoLambdaFunction: Function;
 	public readonly getLeaguesLambdaFunction: Function;
+  public readonly submitNewSinglesMatchLambdaFunction: Function;
+  public readonly getLeagueRecordLambdaFunction: Function;
 
 	constructor(scope: Construct, id: string, props: LeagueStackProps) {
 		super(scope, id, props)
@@ -78,8 +80,49 @@ export class LeagueStack extends Stack {
 			},
 		})
 
+    // Create new match in the matches table lambda function
+    this.submitNewSinglesMatchLambdaFunction = new Function(this, 'SubmitSinglesMatchLambda', {
+			runtime: Runtime.NODEJS_18_X,
+			handler: 'index.handler',
+			code: Code.fromAsset(join(__dirname, '../lambda_functions/submit-new-singles-match-function')),
+		});
+	
+		const submitNewSinglesMatchFunctionURL = this.submitNewSinglesMatchLambdaFunction.addFunctionUrl({
+			authType: FunctionUrlAuthType.NONE,
+		});
+	
+		const submitNewSinglesMatchFunctionEndpoint = new LambdaRestApi(this, `SubmitSinglesMatchApiGwEndpoint`, {
+		handler: this.submitNewSinglesMatchLambdaFunction,
+		restApiName: `SubmitNewSinglesMatch`,
+		proxy: false
+		});
+	  
+		const submitNewMatchItems = submitNewSinglesMatchFunctionEndpoint.root.addResource('items');
+		submitNewMatchItems.addMethod('POST');
+
+    // Get players league record lambda function
+    this.getLeagueRecordLambdaFunction = new Function(this, 'GetLeagueRecordLambda', {
+      functionName: 'GetLeagueRecord',
+			runtime: Runtime.NODEJS_18_X,
+			handler: 'index.handler',
+			code: Code.fromAsset(join(__dirname, '../lambda_functions/get-league-record-function')),
+		});
+	
+		const getLeagueRecordFunctionURL = this.getLeagueRecordLambdaFunction.addFunctionUrl({
+			authType: FunctionUrlAuthType.NONE,
+		});
+	
+		const getLeagueRecordFunctionEndpoint = new LambdaRestApi(this, `GetLeagueRecordApiGwEndpoint`, {
+		handler: this.getLeagueRecordLambdaFunction,
+		restApiName: `GetLeagueRecord`,
+		proxy: false
+		});
+	  
+		const getLeagueRecordItems = getLeagueRecordFunctionEndpoint.root.addResource('items');
+		getLeagueRecordItems.addMethod('POST');
+
 		// Singles matches table
-        this.singlesMatchesTable = new Table(this, 'BreakPointSinglesMatchesTable', {
+    this.singlesMatchesTable = new Table(this, 'BreakPointSinglesMatchesTable', {
 			tableName: 'BreakPointSinglesMatchesTable',
 			removalPolicy: RemovalPolicy.RETAIN,
 			billingMode: BillingMode.PAY_PER_REQUEST,
@@ -88,14 +131,23 @@ export class LeagueStack extends Stack {
                 type: AttributeType.STRING
             },
 		})
+    this.singlesMatchesTable.grantFullAccess(this.submitNewSinglesMatchLambdaFunction)
+    this.singlesMatchesTable.grantReadData(this.getLeagueRecordLambdaFunction)
 
-		// Singles matches secondary index to search for matches by player (cognito) id
-		this.singlesMatchesTable.addGlobalSecondaryIndex({
-			indexName: 'matches-by-cognito-id',
-			partitionKey: { 
-                name: 'cognitoId-P1', 
-                type: AttributeType.STRING 
-            },
-		})
+    this.singlesMatchesTable.addGlobalSecondaryIndex({
+      indexName: 'matches-won-by-player',
+      partitionKey: {
+        name: 'matchWinner',
+        type: AttributeType.STRING
+      }
+    })
+
+    this.singlesMatchesTable.addGlobalSecondaryIndex({
+      indexName: 'matches-lost-by-player',
+      partitionKey: {
+        name: 'matchLoser',
+        type: AttributeType.STRING
+      }
+    })
 	}
 }

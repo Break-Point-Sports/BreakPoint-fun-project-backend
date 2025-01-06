@@ -1,10 +1,11 @@
-#set( $limit = $util.defaultIfNull($ctx.args.limit, 100) )
-#set( $ListRequest = {
-  "version": "2018-05-29",
-  "operation": "Scan",
-  "limit": $limit
-})
-#if( $ctx.args.nextToken )
-  #set( $ListRequest.nextToken = $ctx.args.nextToken )
-#end
-$util.toJson($ListRequest)
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "index" : "room-by-owner-id",
+    "query" : {
+      "expression": "ownerId = :ownerId",
+      "expressionValues" : {
+        ":ownerId" : $util.dynamodb.toDynamoDBJson($ctx.args.ownerId)
+      }
+    }
+}

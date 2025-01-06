@@ -1,0 +1,11 @@
+{
+  "version" : "2018-05-29",
+  "operation" : "UpdateItem",
+  "key": {"id": $util.dynamodb.toDynamoDBJson($ctx.args.input.roomId)},
+  "update" : {
+      "expression" : "SET chatPartnerRoomId = :chatPartnerRoomId",
+      "expressionValues" : {
+          ":chatPartnerRoomId": $util.dynamodb.toDynamoDBJson($ctx.args.input.chatPartnerRoomId)
+      }
+  }
+}

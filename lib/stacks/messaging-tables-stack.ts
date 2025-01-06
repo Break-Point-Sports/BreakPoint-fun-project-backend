@@ -24,6 +24,12 @@ export class MessagingTablesStack extends Stack {
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 		})
 
+    roomTable.addGlobalSecondaryIndex({
+			indexName: 'room-by-owner-id',
+			partitionKey: { name: 'ownerId', type: AttributeType.STRING },
+			// sortKey: { name: 'createdAt', type: AttributeType.STRING },
+		})
+    
 		const messageTable = new Table(this, 'MessageTable', {
 			tableName: 'BreakPointMessageTable',
 			removalPolicy: RemovalPolicy.RETAIN,

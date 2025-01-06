@@ -54,6 +54,18 @@ export class AppsyncAPIStack extends Stack {
 			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
 		})
 
+    roomTableDataSource.createResolver('updateChatPartnerRoomIdResolver', {
+      typeName: 'Mutation',
+      fieldName: 'updateChatPartnerRoomId',
+      requestMappingTemplate: MappingTemplate.fromFile(
+				path.join(
+					__dirname,
+					'../graphql/mappingTemplates/Mutation.updateChatPartnerRoomId.req.vtl'
+				)
+			),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    })
+
 		roomTableDataSource.createResolver('listRoomsResolver', {
 			typeName: 'Query',
 			fieldName: 'listRooms',
@@ -93,18 +105,6 @@ export class AppsyncAPIStack extends Stack {
 					'../graphql/mappingTemplates/Query.listMessagesForRoom.res.vtl'
 				)
 			),
-		})
-
-		messageTableDataSource.createResolver('updateMessageResolver', {
-			typeName: 'Mutation',
-			fieldName: 'updateMessage',
-			requestMappingTemplate: MappingTemplate.fromFile(
-				path.join(
-					__dirname,
-					'../graphql/mappingTemplates/Mutation.updateMessage.req.vtl'
-				)
-			),
-			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
 		})
 
 		new CfnOutput(this, 'GraphQLAPIURL', {
