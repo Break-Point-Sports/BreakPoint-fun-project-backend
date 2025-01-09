@@ -7,9 +7,9 @@ import {join} from 'path';
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 
 interface UserTableStackProps extends StackProps {
-  moveLeagueToPlayoffsLambdaFunction: Function
+  moveLeagueToPlayoffsLambdaFunction: Function,
+  moveLeagueToCurrentLambdaFunction: Function
 }
-
 
 export class UserTableStack extends Stack {
 
@@ -162,6 +162,7 @@ export class UserTableStack extends Stack {
     this.userTable.grantFullAccess(this.joinLeagueLambdaFunction);
     this.userTable.grantFullAccess(this.joinLadderLambdaFunction);
     this.userTable.grantFullAccess(props.moveLeagueToPlayoffsLambdaFunction);
+    this.userTable.grantFullAccess(props.moveLeagueToCurrentLambdaFunction);
     this.userTable.grantReadData(this.getUserDetailsLambdaFunction);
     this.userTable.grantReadData(this.getLeagueMembersFunction);
   }

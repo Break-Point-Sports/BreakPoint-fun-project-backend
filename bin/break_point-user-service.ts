@@ -11,7 +11,8 @@ import { LeagueStack } from '../lib/stacks/league-table-stack';
 const app = new cdk.App();
 const leagueStack = new LeagueStack(app, 'LeagueStack', {})
 const userTableStack = new UserTableStack(app, 'UserTableStack', {
-  moveLeagueToPlayoffsLambdaFunction: leagueStack.moveLeagueToPlayoffsLambdaFunction
+  moveLeagueToPlayoffsLambdaFunction: leagueStack.moveLeagueToPlayoffsLambdaFunction,
+  moveLeagueToCurrentLambdaFunction: leagueStack.moveLeagueToCurrentLambdaFunction
 });
 const cognitoStack = new CognitoStack(app, 'CognitoStack', {});
 const profilePicStack = new ProfilePicStack(app, 'ProfilePicStack', {});
