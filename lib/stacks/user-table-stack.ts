@@ -6,6 +6,10 @@ import { Function, Runtime, Code, FunctionUrlAuthType } from "aws-cdk-lib/aws-la
 import {join} from 'path';
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 
+interface UserTableStackProps extends StackProps {
+  moveLeagueToPlayoffsLambdaFunction: Function
+}
+
 
 export class UserTableStack extends Stack {
 
@@ -17,7 +21,7 @@ export class UserTableStack extends Stack {
   public readonly userTable: Table;
   
 
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: UserTableStackProps) {
     super(scope, id, props);
     
     // CreateNewUserLambda
@@ -136,7 +140,7 @@ export class UserTableStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN,
     });
 
-    // Add gsi for querying users by league
+    // Add gsi for querying users by current league
     this.userTable.addGlobalSecondaryIndex({
 			indexName: 'users-by-current-league',
 			partitionKey: { 
@@ -145,9 +149,19 @@ export class UserTableStack extends Stack {
       },
 		})
 
+    // Add gsi for querying users by future league
+    this.userTable.addGlobalSecondaryIndex({
+      indexName: 'users-by-future-league',
+      partitionKey: { 
+        name: 'futureLeague', 
+        type: AttributeType.STRING 
+      },
+    })
+
     this.userTable.grantFullAccess(this.createNewUserLambdaFunction);
     this.userTable.grantFullAccess(this.joinLeagueLambdaFunction);
     this.userTable.grantFullAccess(this.joinLadderLambdaFunction);
+    this.userTable.grantFullAccess(props.moveLeagueToPlayoffsLambdaFunction);
     this.userTable.grantReadData(this.getUserDetailsLambdaFunction);
     this.userTable.grantReadData(this.getLeagueMembersFunction);
   }

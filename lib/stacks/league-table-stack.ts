@@ -14,6 +14,7 @@ export class LeagueStack extends Stack {
 	public readonly getLeaguesLambdaFunction: Function;
   public readonly submitNewSinglesMatchLambdaFunction: Function;
   public readonly getLeagueRecordLambdaFunction: Function;
+  public readonly moveLeagueToPlayoffsLambdaFunction: Function;
 
 	constructor(scope: Construct, id: string, props: LeagueStackProps) {
 		super(scope, id, props)
@@ -30,9 +31,9 @@ export class LeagueStack extends Stack {
 		});
 	
 		const getLeagueFunctionEndpoint = new LambdaRestApi(this, `ApiGwEndpoint`, {
-		handler: this.getLeagueInfoLambdaFunction,
-		restApiName: `GetLeagueInfo`,
-		proxy: false
+      handler: this.getLeagueInfoLambdaFunction,
+      restApiName: `GetLeagueInfo`,
+      proxy: false
 		});
 	  
 		const getLeagueInfoItems = getLeagueFunctionEndpoint.root.addResource('items');
@@ -50,13 +51,34 @@ export class LeagueStack extends Stack {
 		});
 	
 		const getLeaguesFunctionEndpoint = new LambdaRestApi(this, `GetLeaguesApiGwEndpoint`, {
-		handler: this.getLeagueInfoLambdaFunction,
-		restApiName: `GetLeagues`,
-		proxy: false
+      handler: this.getLeagueInfoLambdaFunction,
+      restApiName: `GetLeagues`,
+      proxy: false
 		});
 	  
 		const getLeaguesItems = getLeaguesFunctionEndpoint.root.addResource('items');
 		getLeaguesItems.addMethod('GET');
+
+    // Move league to playoffs lambda function
+		this.moveLeagueToPlayoffsLambdaFunction = new Function(this, 'MoveLeagueToPlayoffsLambda', {
+      functionName: 'MoveLeagueToPlayoffsLambda',
+			runtime: Runtime.NODEJS_18_X,
+			handler: 'index.handler',
+			code: Code.fromAsset(join(__dirname, '../lambda_functions/move-league-to-playoffs-function')),
+		});
+	
+		const moveLeagueToPlayoffsFunctionURL = this.moveLeagueToPlayoffsLambdaFunction.addFunctionUrl({
+			authType: FunctionUrlAuthType.NONE,
+		});
+	
+		const moveLeagueToFunctionEndpoint = new LambdaRestApi(this, `MoveLeagueToPlayoffsApiGwEndpoint`, {
+      handler: this.moveLeagueToPlayoffsLambdaFunction,
+      restApiName: `MoveLeagueToPlayoffs`,
+      proxy: false
+		});
+	  
+		const moveLeagueToPlayoffsItems = moveLeagueToFunctionEndpoint.root.addResource('items');
+		moveLeagueToPlayoffsItems.addMethod('GET');
 
 		// Leagues table
 		this.leagueTable = new Table(this, 'LeagueTable', {
@@ -70,6 +92,7 @@ export class LeagueStack extends Stack {
 		})
 		this.leagueTable.grantReadData(this.getLeagueInfoLambdaFunction);
 		this.leagueTable.grantReadData(this.getLeaguesLambdaFunction);
+    this.leagueTable.grantFullAccess(this.moveLeagueToPlayoffsLambdaFunction);
 
 		// Singles matches secondary index to search for matches by player (cognito) id
 		this.leagueTable.addGlobalSecondaryIndex({
@@ -133,6 +156,8 @@ export class LeagueStack extends Stack {
 		})
     this.singlesMatchesTable.grantFullAccess(this.submitNewSinglesMatchLambdaFunction)
     this.singlesMatchesTable.grantReadData(this.getLeagueRecordLambdaFunction)
+    this.singlesMatchesTable.grantReadData(this.moveLeagueToPlayoffsLambdaFunction)
+
 
     this.singlesMatchesTable.addGlobalSecondaryIndex({
       indexName: 'matches-won-by-player',
