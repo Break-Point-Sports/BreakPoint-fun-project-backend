@@ -33,7 +33,6 @@ export class CognitoStack extends cdk.Stack {
             //     sms: true,
             //     otp: false,
             // },
-
         })
         
         this.userPoolClient = new cognito.UserPoolClient(this, "BPUserPoolClient", {
